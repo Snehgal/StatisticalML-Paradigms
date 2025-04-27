@@ -1,193 +1,12 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-
-def gini(y):
-    """
-    Calculate the Gini impurity for a set of labels.
-    
-    The Gini impurity measures how often a randomly chosen element would be incorrectly
-    labeled if it was randomly labeled according to the distribution of labels in the set.
-    
-    Parameters:
-        y (array-like): Array of class labels.
-        
-    Returns:
-        float: Gini impurity value. Lower values indicate more homogeneous sets.
-    """
-    classes, counts = np.unique(y, return_counts=True)
-    probabilities = counts/counts.sum()
-    return 1 - np.sum(probabilities**2)
-
-def findBestSplit(X, y):
-    """
-    Find the best feature and threshold to split the data based on Gini impurity.
-    
-    This function evaluates all possible features and thresholds to determine
-    which split minimizes the weighted average of Gini impurities in the resulting partitions.
-    
-    Parameters:
-        X (numpy.ndarray): Feature matrix of shape (d, n) where d is the number of samples 
-                           and n is the number of features.
-        y (array-like): Target labels array.
-        
-    Returns:
-        tuple: (bestFeature, bestThreshold) where:
-            - bestFeature (int): Index of the feature that gives the best split.
-            - bestThreshold (float): Threshold value for the selected feature.
-            Returns (None, None) if no valid split is found.
-    """
-    bestGini = float('inf')
-    bestFeature = None
-    bestThreshold = None
-    d, n = X.shape
-
-    for feature in range(n):
-        unique_values = np.unique(X[:, feature])  # Unique sorted values
-        if len(unique_values) < 2:
-            continue  # Skip if only one unique value (no split possible)
-        # Compute midpoints of consecutive unique values
-        midpoints = (unique_values[:-1] + unique_values[1:]) / 2
-    
-        for threshold in midpoints:
-            leftSplit = X[:, feature] <= threshold
-            rightSplit = X[:, feature] > threshold
-
-            if(sum(leftSplit)*sum(rightSplit) == 0): #either is 0 (all false), then move on 
-                continue
-                
-            leftGini = gini(y[leftSplit])
-            rightGini = gini(y[rightSplit])
-            totalGini = (sum(leftSplit) * leftGini + sum(rightSplit) * rightGini) / len(y)
-                       
-            if totalGini < bestGini:
-                bestGini = totalGini
-                bestFeature = feature
-                bestThreshold = threshold
-    return bestFeature, bestThreshold
-
-def findBestSplitRF(X, y, numFeatures=2):
-    """
-    Find the best split for Random Forest by evaluating only a subset of features.
-    
-    Similar to findBestSplit but considers only a randomly selected subset of features,
-    which is a key characteristic of the Random Forest algorithm.
-    
-    Parameters:
-        X (numpy.ndarray): Feature matrix of shape (d, n) where d is the number of samples 
-                           and n is the number of features.
-        y (array-like): Target labels array.
-        numFeatures (int, optional): Number of features to consider for the split. Default is 2.
-        
-    Returns:
-        tuple: (bestFeature, bestThreshold) where:
-            - bestFeature (int): Index of the feature that gives the best split.
-            - bestThreshold (float): Threshold value for the selected feature.
-            Returns (None, None) if no valid split is found.
-    """
-    bestGini = float('inf')
-    bestFeature = None
-    bestThreshold = None
-
-    # Randomly select a subset of features
-    featureIndices = np.random.choice(X.shape[1], numFeatures, replace=False)
-
-    for feature in featureIndices:
-        unique_values = np.unique(X[:, feature])  # Unique sorted values
-        if len(unique_values) < 2:
-            continue  # Skip if only one unique value (no split possible)
-
-        # Compute midpoints of consecutive unique values
-        midpoints = (unique_values[:-1] + unique_values[1:]) / 2
-
-        for threshold in midpoints:
-            leftSplit = X[:, feature] <= threshold
-            rightSplit = X[:, feature] > threshold
-
-            if sum(leftSplit) == 0 or sum(rightSplit) == 0:  # Avoid empty splits
-                continue
-
-            leftGini = gini(y[leftSplit])
-            rightGini = gini(y[rightSplit])
-            totalGini = (sum(leftSplit) * leftGini + sum(rightSplit) * rightGini) / len(y)
-
-            if totalGini < bestGini:
-                bestGini = totalGini
-                bestFeature = feature
-                bestThreshold = threshold
-
-    return bestFeature, bestThreshold
-
-def foldSplit(data, k=5):
-    """
-    Splits data into k folds for cross-validation.
-    
-    Parameters:
-        data (pandas.DataFrame or numpy.ndarray): The dataset to split.
-        k (int, optional): Number of folds. Default is 5.
-        
-    Returns:
-        list: A list of k arrays containing indices for each fold.
-    """
-    indices = np.arange(len(data)) # Generate array with evenly spaced values
-    np.random.shuffle(indices)
-    return np.array_split(indices, k)
-
-def polyFeatures(x, degree):
-    """
-    Creates polynomial features from a single feature.
-    
-    Transforms a single feature into a matrix with polynomial terms up to the specified degree.
-    
-    Parameters:
-        x (numpy.ndarray): Input feature vector.
-        degree (int): Maximum polynomial degree.
-        
-    Returns:
-        numpy.ndarray: Matrix with polynomial features where each column represents
-                       a different power of x from 0 to degree.
-    """
-    return np.column_stack([x**d for d in range(degree + 1)])
-
-def crossValError(data, degree, k=5):
-    """
-    Performs k-fold cross-validation for polynomial regression and returns average MSE.
-    
-    This function splits the data into k folds, trains a polynomial regression model 
-    on k-1 folds and tests on the remaining fold, repeating for each fold.
-    
-    Parameters:
-        data (pandas.DataFrame): Dataset containing 'x' and 'y' columns.
-        degree (int): Polynomial degree to use in the regression.
-        k (int, optional): Number of folds for cross-validation. Default is 5.
-        
-    Returns:
-        float: Average Mean Squared Error across all folds.
-    """
-    folds = foldSplit(data, k)
-    errors = []
-        
-    for i in range(k):
-        # Create train-test split
-        test_idx = folds[i]
-        train_idx = np.concatenate([folds[j] for j in range(k) if j != i])
-
-        train_x, train_y = data.iloc[train_idx]['x'].values, data.iloc[train_idx]['y'].values
-        test_x, test_y = data.iloc[test_idx]['x'].values, data.iloc[test_idx]['y'].values
-        # Generate polynomial features
-        X_train = polyFeatures(train_x, degree)
-        X_test = polyFeatures(test_x, degree)
-
-        W = np.linalg.pinv(X_train.T @ X_train) @ X_train.T @ train_y # Compute weights
-
-        # Predict on test data
-        y_pred = X_test @ W
-
-        # Compute Mean Squared Error (MSE)
-        mse = np.mean((test_y - y_pred) ** 2)
-        errors.append(mse)
-
-    return np.mean(errors)
+import numpy as np
+import matplotlib.pyplot as plt
+from tensorflow.keras.datasets import mnist
+from scipy.linalg import eigh
+from sklearn.metrics import accuracy_score,mean_squared_error,mean_absolute_error
+from DataProcessing import pca,numpy_split
 
 class BinaryDecisionTree:
     """
@@ -467,3 +286,371 @@ class BaggedTrees:
         for i in range(len(self.trees)):
             print(f"\nTree {i}")
             self.trees[i].printTree()
+            
+class DecisionStump:
+    """
+    One height trees that store which feature-threshold split is best,
+    which side is to be classified as which class and its weight in the final model
+    """
+    def __init__(self):
+        self.featureIndex = None
+        self.threshold = None
+        self.polarity = 1  # Determines the direction of the inequality
+        self.beta = None  # Classifier weight
+
+    def predict(self, X):
+        n_samples = X.shape[0]
+        predictions = np.ones(n_samples)
+
+        if self.polarity == 1:
+            predictions[X[:, self.featureIndex] < self.threshold] = -1
+        else:
+            predictions[X[:, self.featureIndex] >= self.threshold] = -1
+
+        return predictions
+
+    def __str__(self):
+        return (f"DecisionStump(featureIndex={self.featureIndex}, "
+                f"threshold={self.threshold:.4f}, "
+                f"lessThanClass={self.polarity}, "
+                f"beta={self.beta:.4f})")
+
+class AdaBoost:
+    """
+    AdaBoost using decision stumps as weak learners.
+
+    n_estimators: Number of weak learners.
+    uniform_cuts: Number of thresholds to try per feature.
+    verbose: Print training progress.
+    """
+    def __init__(self, n_estimators=200, uniform_cuts=3, verbose=True):
+        self.n_estimators = n_estimators
+        self.uniform_cuts = uniform_cuts
+        self.verbose = verbose
+        self.stumps = []
+        self.train_errors = []
+        self.train_losses = []
+        self.test_losses = []
+        self.val_losses = []
+
+    def fit(self, X_train, y_train, X_val, y_val, X_test, y_test):
+        n_samples, n_features = X_train.shape
+        weights = np.full(n_samples, 1 / n_samples)
+
+        for t in range(self.n_estimators):
+            # if self.verbose:
+            #     print(f"\nUsing Weights: {weights}")
+
+            stump = DecisionStump()
+            min_error = float('inf')
+
+            # Search for best feature and threshold
+            for featureIndex in range(n_features):
+                feature_values = X_train[:, featureIndex]
+                thresholds = np.linspace(np.min(feature_values),
+                                       np.max(feature_values),
+                                       self.uniform_cuts + 2)[1:-1]
+
+                for threshold in thresholds:
+                    for polarity in [1, -1]:
+                        predictions = np.ones(n_samples)
+                        if polarity == 1:
+                            predictions[feature_values < threshold] = -1
+                        else:
+                            predictions[feature_values >= threshold] = -1
+
+                        misclassified = weights * (predictions != y_train)
+                        error = np.sum(misclassified)
+
+                        if error > 0.5:
+                            error = 1 - error
+                            polarity = -polarity
+
+                        if error < min_error:
+                            min_error = error
+                            stump.featureIndex = featureIndex
+                            stump.threshold = threshold
+                            stump.polarity = polarity
+
+            # Prevent numerical instability
+            min_error = np.clip(min_error, 1e-10, 1 - 1e-10)
+
+            # Calculate classifier weight
+            stump.beta = 0.5 * np.log((1 - min_error) / min_error)
+
+            # Update weights
+            predictions = stump.predict(X_train)
+            weights *= np.exp(-stump.beta * y_train * predictions)
+            weights /= np.sum(weights)
+
+            self.stumps.append(stump)
+
+            # Store metrics
+            self._store_metrics(X_train, y_train, X_val, y_val, X_test, y_test)
+
+            # Handle output based on verbosity
+            if self.verbose:
+                print(stump)
+                print(f"Min Error: {min_error} Misclassified: {np.sum(predictions != y_train)}, "
+                      f"Updating as w_j*{(1 - min_error)/min_error:.1f}")
+                print(f"Iteration {t + 1}: Train error: {self.train_errors[-1]:.4f}")
+            elif (t + 1) % 10 == 0 or t == 0 or t == self.n_estimators - 1:
+                print(f"Round {t + 1}/{self.n_estimators}, Train Error: {self.train_errors[-1]:.4f}")
+
+    def _store_metrics(self, X_train, y_train, X_val, y_val, X_test, y_test):
+        train_pred = self.predict(X_train)
+        self.train_errors.append(np.mean(train_pred != y_train))
+
+        for X, y, loss_list in [
+            (X_train, y_train, self.train_losses),
+            (X_val, y_val, self.val_losses),
+            (X_test, y_test, self.test_losses)
+        ]:
+            margin = -y * self.decision_function(X)
+            loss = np.mean(np.exp(np.clip(margin, -500, 500)))
+            loss_list.append(loss)
+
+    def decision_function(self, X):
+        return sum(stump.beta * stump.predict(X) for stump in self.stumps)
+
+    def predict(self, X):
+        return np.sign(self.decision_function(X))
+
+    def __str__(self):
+        s = f"AdaBoost(numClassifiers={self.n_estimators})\n"
+        for i, clf in enumerate(self.stumps):
+            s += f"  Round {i + 1}: {clf}\n"
+        return s
+
+def gini(y):
+    """
+    Calculate the Gini impurity for a set of labels.
+    
+    The Gini impurity measures how often a randomly chosen element would be incorrectly
+    labeled if it was randomly labeled according to the distribution of labels in the set.
+    
+    Parameters:
+        y (array-like): Array of class labels.
+        
+    Returns:
+        float: Gini impurity value. Lower values indicate more homogeneous sets.
+    """
+    classes, counts = np.unique(y, return_counts=True)
+    probabilities = counts/counts.sum()
+    return 1 - np.sum(probabilities**2)
+
+def findBestSplit(X, y):
+    """
+    Find the best feature and threshold to split the data based on Gini impurity.
+    
+    This function evaluates all possible features and thresholds to determine
+    which split minimizes the weighted average of Gini impurities in the resulting partitions.
+    
+    Parameters:
+        X (numpy.ndarray): Feature matrix of shape (d, n) where d is the number of samples 
+                           and n is the number of features.
+        y (array-like): Target labels array.
+        
+    Returns:
+        tuple: (bestFeature, bestThreshold) where:
+            - bestFeature (int): Index of the feature that gives the best split.
+            - bestThreshold (float): Threshold value for the selected feature.
+            Returns (None, None) if no valid split is found.
+    """
+    bestGini = float('inf')
+    bestFeature = None
+    bestThreshold = None
+    d, n = X.shape
+
+    for feature in range(n):
+        unique_values = np.unique(X[:, feature])  # Unique sorted values
+        if len(unique_values) < 2:
+            continue  # Skip if only one unique value (no split possible)
+        # Compute midpoints of consecutive unique values
+        midpoints = (unique_values[:-1] + unique_values[1:]) / 2
+    
+        for threshold in midpoints:
+            leftSplit = X[:, feature] <= threshold
+            rightSplit = X[:, feature] > threshold
+
+            if(sum(leftSplit)*sum(rightSplit) == 0): #either is 0 (all false), then move on 
+                continue
+                
+            leftGini = gini(y[leftSplit])
+            rightGini = gini(y[rightSplit])
+            totalGini = (sum(leftSplit) * leftGini + sum(rightSplit) * rightGini) / len(y)
+                       
+            if totalGini < bestGini:
+                bestGini = totalGini
+                bestFeature = feature
+                bestThreshold = threshold
+    return bestFeature, bestThreshold
+
+def findBestSplitRF(X, y, numFeatures=2):
+    """
+    Find the best split for Random Forest by evaluating only a subset of features.
+    
+    Similar to findBestSplit but considers only a randomly selected subset of features,
+    which is a key characteristic of the Random Forest algorithm.
+    
+    Parameters:
+        X (numpy.ndarray): Feature matrix of shape (d, n) where d is the number of samples 
+                           and n is the number of features.
+        y (array-like): Target labels array.
+        numFeatures (int, optional): Number of features to consider for the split. Default is 2.
+        
+    Returns:
+        tuple: (bestFeature, bestThreshold) where:
+            - bestFeature (int): Index of the feature that gives the best split.
+            - bestThreshold (float): Threshold value for the selected feature.
+            Returns (None, None) if no valid split is found.
+    """
+    bestGini = float('inf')
+    bestFeature = None
+    bestThreshold = None
+
+    # Randomly select a subset of features
+    featureIndices = np.random.choice(X.shape[1], numFeatures, replace=False)
+
+    for feature in featureIndices:
+        unique_values = np.unique(X[:, feature])  # Unique sorted values
+        if len(unique_values) < 2:
+            continue  # Skip if only one unique value (no split possible)
+
+        # Compute midpoints of consecutive unique values
+        midpoints = (unique_values[:-1] + unique_values[1:]) / 2
+
+        for threshold in midpoints:
+            leftSplit = X[:, feature] <= threshold
+            rightSplit = X[:, feature] > threshold
+
+            if sum(leftSplit) == 0 or sum(rightSplit) == 0:  # Avoid empty splits
+                continue
+
+            leftGini = gini(y[leftSplit])
+            rightGini = gini(y[rightSplit])
+            totalGini = (sum(leftSplit) * leftGini + sum(rightSplit) * rightGini) / len(y)
+
+            if totalGini < bestGini:
+                bestGini = totalGini
+                bestFeature = feature
+                bestThreshold = threshold
+
+    return bestFeature, bestThreshold
+
+def foldSplit(data, k=5):
+    """
+    Splits data into k folds for cross-validation.
+    
+    Parameters:
+        data (pandas.DataFrame or numpy.ndarray): The dataset to split.
+        k (int, optional): Number of folds. Default is 5.
+        
+    Returns:
+        list: A list of k arrays containing indices for each fold.
+    """
+    indices = np.arange(len(data)) # Generate array with evenly spaced values
+    np.random.shuffle(indices)
+    return np.array_split(indices, k)
+
+def polyFeatures(x, degree):
+    """
+    Creates polynomial features from a single feature.
+    
+    Transforms a single feature into a matrix with polynomial terms up to the specified degree.
+    
+    Parameters:
+        x (numpy.ndarray): Input feature vector.
+        degree (int): Maximum polynomial degree.
+        
+    Returns:
+        numpy.ndarray: Matrix with polynomial features where each column represents
+                       a different power of x from 0 to degree.
+    """
+    return np.column_stack([x**d for d in range(degree + 1)])
+
+def crossValError(data, degree, k=5):
+    """
+    Performs k-fold cross-validation for polynomial regression and returns average MSE.
+    
+    This function splits the data into k folds, trains a polynomial regression model 
+    on k-1 folds and tests on the remaining fold, repeating for each fold.
+    
+    Parameters:
+        data (pandas.DataFrame): Dataset containing 'x' and 'y' columns.
+        degree (int): Polynomial degree to use in the regression.
+        k (int, optional): Number of folds for cross-validation. Default is 5.
+        
+    Returns:
+        float: Average Mean Squared Error across all folds.
+    """
+    folds = foldSplit(data, k)
+    errors = []
+        
+    for i in range(k):
+        # Create train-test split
+        test_idx = folds[i]
+        train_idx = np.concatenate([folds[j] for j in range(k) if j != i])
+
+        train_x, train_y = data.iloc[train_idx]['x'].values, data.iloc[train_idx]['y'].values
+        test_x, test_y = data.iloc[test_idx]['x'].values, data.iloc[test_idx]['y'].values
+        # Generate polynomial features
+        X_train = polyFeatures(train_x, degree)
+        X_test = polyFeatures(test_x, degree)
+
+        W = np.linalg.pinv(X_train.T @ X_train) @ X_train.T @ train_y # Compute weights
+
+        # Predict on test data
+        y_pred = X_test @ W
+
+        # Compute Mean Squared Error (MSE)
+        mse = np.mean((test_y - y_pred) ** 2)
+        errors.append(mse)
+
+    return np.mean(errors)
+
+def plot_results(adaboost):
+    plt.figure(figsize=(12, 4))
+
+    # Loss plot
+    plt.subplot(1, 2, 1)
+    plt.plot(adaboost.train_losses, label='Train Loss')
+    plt.plot(adaboost.test_losses, label='Test Loss')
+    plt.plot(adaboost.val_losses, label='Validation Loss')
+    plt.xlabel('Boosting Rounds')
+    plt.ylabel('Exponential Loss')
+    plt.legend()
+    plt.title('Loss vs Boosting Rounds')
+
+    # Error plot
+    plt.subplot(1, 2, 2)
+    plt.plot(adaboost.train_errors, label='Train Error')
+    plt.xlabel('Boosting Rounds')
+    plt.ylabel('Error Rate')
+    plt.legend()
+    plt.title('Training Error vs Boosting Rounds')
+
+    plt.tight_layout()
+    plt.show()
+
+def plot_stump_weights(adaboost):
+    """Plot the weights (beta) assigned to each stump across rounds"""
+    rounds = np.arange(1, len(adaboost.stumps)+1)
+    betas = [stump.beta for stump in adaboost.stumps]
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(rounds, betas, marker='o', linestyle='-', color='b')
+    plt.xlabel('Boosting Round')
+    plt.ylabel('Stump Weight (β)')
+    plt.title('Classifier Weight vs Boosting Round')
+    plt.grid(True)
+
+    # Highlight every 10th round for readability
+    for r in range(0, len(rounds), 10):
+        plt.annotate(f"{betas[r]:.3f}",
+                    (rounds[r], betas[r]),
+                    textcoords="offset points",
+                    xytext=(0,10), ha='center')
+
+    plt.tight_layout()
+    plt.show()
