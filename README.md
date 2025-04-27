@@ -6,6 +6,15 @@ A lightweight Python library for machine learning algorithms and utilities.
 
 - [Installation](#installation)
 - [Modules Overview](#modules)
+- [DataPreprocessing Module](#datapreprocessing-module)
+  <details>
+    <summary>Functions</summary>
+    
+    - [numpy_split](#datapreprocessingnumpy_split)
+    - [accuracy](#datapreprocessingaccuracy)
+    - [pca](#datapreprocessingpca)
+    - [FDA](#datapreprocessingfda)
+  </details>
 - [Trees Module](#trees-module)
   <details>
     <summary>Classes and Functions</summary>
@@ -18,15 +27,6 @@ A lightweight Python library for machine learning algorithms and utilities.
     - [foldSplit](#treesfoldsplit)
     - [polyFeatures](#treespolyfeatures)
     - [crossValError](#treescrossvalerror)
-  </details>
-- [DataPreprocessing Module](#datapreprocessing-module)
-  <details>
-    <summary>Functions</summary>
-    
-    - [numpy_split](#datapreprocessingnumpy_split)
-    - [accuracy](#datapreprocessingaccuracy)
-    - [pca](#datapreprocessingpca)
-    - [FDA](#datapreprocessingfda)
   </details>
 - [Regression Module](#regression-module)
   <details>
@@ -66,10 +66,148 @@ A lightweight Python library for machine learning algorithms and utilities.
 
 ## Modules
 
-- `Trees` - Decision tree-based models and ensembles
 - `DataPreprocessing` - Data splitting, processing, and dimensionality reduction utilities
+- `Trees` - Decision tree-based models and ensembles
 - `Regression` - Gradient boosting and neural network implementations
 - Additional modules coming soon...
+
+## DataPreprocessing Module
+
+The `DataPreprocessing` module provides utilities for data preprocessing, including data splitting, accuracy calculation, and dimensionality reduction techniques like PCA and FDA.
+
+### Usage
+
+```python
+from SML import DataPreprocessing
+import numpy as np
+
+# Example: Split data into training and test sets
+X = np.array([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]])
+y = np.array([0, 1, 0, 1, 0])
+X_train, X_test, y_train, y_test = DataPreprocessing.numpy_split(X, y, test_size=0.2, random_state=42)
+
+# Example: Perform PCA on a dataset
+X = np.random.randn(10, 100)  # 10 features, 100 samples
+X_reduced, U_p, p = DataPreprocessing.pca(X, preservedVariance=0.95)
+```
+
+### `DataPreprocessing.numpy_split`
+
+Split dataset into train and test sets.
+
+**Parameters:**
+- `x` (np.ndarray): Features (n_samples, n_features).
+- `y` (np.ndarray): Labels (n_samples,).
+- `test_size` (float): Fraction of data to reserve for testing.
+- `random_state` (int, optional): Random seed for reproducibility.
+
+**Returns:**
+- `tuple`: (x_train, x_test, y_train, y_test) splits of input data.
+
+**Example:**
+```python
+from SML import DataPreprocessing
+import numpy as np
+
+X = np.array([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]])
+y = np.array([0, 1, 0, 1, 0])
+
+X_train, X_test, y_train, y_test = DataPreprocessing.numpy_split(X, y, test_size=0.2, random_state=42)
+```
+
+### `DataPreprocessing.accuracy`
+
+Compute classification accuracy.
+
+**Parameters:**
+- `xTest` (np.ndarray): Test features of shape (n_features, n_samples).
+- `labels` (np.ndarray): True labels.
+- `predict` (function): Function that predicts label given a sample.
+
+**Returns:**
+- `float`: Accuracy (correct predictions / total predictions).
+
+**Example:**
+```python
+from SML import DataPreprocessing, Trees
+import numpy as np
+
+# Prepare data
+X = np.array([[2.5, 1.0], [3.0, 2.1], [1.5, 3.4], [4.2, 2.5]]).T  # Transpose to match expected format
+y = np.array(["Yes", "No", "Yes", "No"])
+
+# Train a model
+tree = Trees.BinaryDecisionTree(maxDepth=3, minSamples=1)
+tree.train(X.T, y)  # Note: tree.train expects (n_samples, n_features)
+
+# Calculate accuracy
+acc = DataPreprocessing.accuracy(X, y, tree.predictSingle)
+print(f"Accuracy: {acc:.4f}")
+```
+
+### `DataPreprocessing.pca`
+
+Perform Principal Component Analysis (PCA) on the data.
+
+**Parameters:**
+- `X` (np.ndarray): Data matrix of shape (features, samples).
+- `preservedVariance` (float, optional): Desired variance retention (e.g., 0.95 or 95 for 95%).
+- `pcaComponents` (int, optional): Number of PCA components to reduce to.
+
+**Returns:**
+- `tuple`: (X_reduced, U_p, p)
+  - `X_reduced` (np.ndarray): Reduced data matrix (p components x samples).
+  - `U_p` (np.ndarray): Top eigenvectors (features x p components).
+  - `p` (int): Number of components selected.
+
+**Example:**
+```python
+from SML import DataPreprocessing
+import numpy as np
+
+# Create a dataset with 10 features and 100 samples
+X = np.random.randn(10, 100)
+
+# Reduce dimensionality while preserving 95% of variance
+X_reduced, U_p, p = DataPreprocessing.pca(X, preservedVariance=0.95)
+print(f"Original shape: {X.shape}, Reduced shape: {X_reduced.shape}")
+
+# Or specify exact number of components
+X_reduced_2, U_p_2, _ = DataPreprocessing.pca(X, pcaComponents=3)
+print(f"Reduced to exactly 3 components: {X_reduced_2.shape}")
+```
+
+### `DataPreprocessing.FDA`
+
+Perform Fisher Discriminant Analysis (FDA) on training sets.
+
+**Parameters:**
+- `train_sets` (list of np.ndarray): List of datasets, each (features, samples) for a class.
+- `delta` (float): Regularization parameter for stability.
+- `num_components` (int): Number of FDA components to retain.
+- `graph` (bool): Whether to plot the projected data.
+
+**Returns:**
+- `tuple`: (W, X_projected)
+  - `W` (np.ndarray): Projection matrix (features x num_components).
+  - `X_projected` (np.ndarray): Projected dataset (num_components x total_samples).
+
+**Example:**
+```python
+from SML import DataPreprocessing
+import numpy as np
+
+# Create two classes with 5 features and 20 samples each
+class1 = np.random.randn(5, 20) + np.array([2, 0, 0, 0, 0]).reshape(-1, 1)
+class2 = np.random.randn(5, 20) + np.array([-2, 0, 0, 0, 0]).reshape(-1, 1)
+
+# Perform FDA
+W, X_projected = DataPreprocessing.FDA([class1, class2], num_components=2, graph=True)
+
+print(f"Projection matrix shape: {W.shape}")
+print(f"Projected data shape: {X_projected.shape}")
+```
+
 
 ## Trees Module
 
@@ -289,142 +427,6 @@ for degree in range(1, 5):
     print(f"Degree {degree} - Cross-validation MSE: {mse:.4f}")
 ```
 
-## DataPreprocessing Module
-
-The `DataPreprocessing` module provides utilities for data preprocessing, including data splitting, accuracy calculation, and dimensionality reduction techniques like PCA and FDA.
-
-### Usage
-
-```python
-from SML import DataPreprocessing
-import numpy as np
-
-# Example: Split data into training and test sets
-X = np.array([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]])
-y = np.array([0, 1, 0, 1, 0])
-X_train, X_test, y_train, y_test = DataPreprocessing.numpy_split(X, y, test_size=0.2, random_state=42)
-
-# Example: Perform PCA on a dataset
-X = np.random.randn(10, 100)  # 10 features, 100 samples
-X_reduced, U_p, p = DataPreprocessing.pca(X, preservedVariance=0.95)
-```
-
-### `DataPreprocessing.numpy_split`
-
-Split dataset into train and test sets.
-
-**Parameters:**
-- `x` (np.ndarray): Features (n_samples, n_features).
-- `y` (np.ndarray): Labels (n_samples,).
-- `test_size` (float): Fraction of data to reserve for testing.
-- `random_state` (int, optional): Random seed for reproducibility.
-
-**Returns:**
-- `tuple`: (x_train, x_test, y_train, y_test) splits of input data.
-
-**Example:**
-```python
-from SML import DataPreprocessing
-import numpy as np
-
-X = np.array([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]])
-y = np.array([0, 1, 0, 1, 0])
-
-X_train, X_test, y_train, y_test = DataPreprocessing.numpy_split(X, y, test_size=0.2, random_state=42)
-```
-
-### `DataPreprocessing.accuracy`
-
-Compute classification accuracy.
-
-**Parameters:**
-- `xTest` (np.ndarray): Test features of shape (n_features, n_samples).
-- `labels` (np.ndarray): True labels.
-- `predict` (function): Function that predicts label given a sample.
-
-**Returns:**
-- `float`: Accuracy (correct predictions / total predictions).
-
-**Example:**
-```python
-from SML import DataPreprocessing, Trees
-import numpy as np
-
-# Prepare data
-X = np.array([[2.5, 1.0], [3.0, 2.1], [1.5, 3.4], [4.2, 2.5]]).T  # Transpose to match expected format
-y = np.array(["Yes", "No", "Yes", "No"])
-
-# Train a model
-tree = Trees.BinaryDecisionTree(maxDepth=3, minSamples=1)
-tree.train(X.T, y)  # Note: tree.train expects (n_samples, n_features)
-
-# Calculate accuracy
-acc = DataPreprocessing.accuracy(X, y, tree.predictSingle)
-print(f"Accuracy: {acc:.4f}")
-```
-
-### `DataPreprocessing.pca`
-
-Perform Principal Component Analysis (PCA) on the data.
-
-**Parameters:**
-- `X` (np.ndarray): Data matrix of shape (features, samples).
-- `preservedVariance` (float, optional): Desired variance retention (e.g., 0.95 or 95 for 95%).
-- `pcaComponents` (int, optional): Number of PCA components to reduce to.
-
-**Returns:**
-- `tuple`: (X_reduced, U_p, p)
-  - `X_reduced` (np.ndarray): Reduced data matrix (p components x samples).
-  - `U_p` (np.ndarray): Top eigenvectors (features x p components).
-  - `p` (int): Number of components selected.
-
-**Example:**
-```python
-from SML import DataPreprocessing
-import numpy as np
-
-# Create a dataset with 10 features and 100 samples
-X = np.random.randn(10, 100)
-
-# Reduce dimensionality while preserving 95% of variance
-X_reduced, U_p, p = DataPreprocessing.pca(X, preservedVariance=0.95)
-print(f"Original shape: {X.shape}, Reduced shape: {X_reduced.shape}")
-
-# Or specify exact number of components
-X_reduced_2, U_p_2, _ = DataPreprocessing.pca(X, pcaComponents=3)
-print(f"Reduced to exactly 3 components: {X_reduced_2.shape}")
-```
-
-### `DataPreprocessing.FDA`
-
-Perform Fisher Discriminant Analysis (FDA) on training sets.
-
-**Parameters:**
-- `train_sets` (list of np.ndarray): List of datasets, each (features, samples) for a class.
-- `delta` (float): Regularization parameter for stability.
-- `num_components` (int): Number of FDA components to retain.
-- `graph` (bool): Whether to plot the projected data.
-
-**Returns:**
-- `tuple`: (W, X_projected)
-  - `W` (np.ndarray): Projection matrix (features x num_components).
-  - `X_projected` (np.ndarray): Projected dataset (num_components x total_samples).
-
-**Example:**
-```python
-from SML import DataPreprocessing
-import numpy as np
-
-# Create two classes with 5 features and 20 samples each
-class1 = np.random.randn(5, 20) + np.array([2, 0, 0, 0, 0]).reshape(-1, 1)
-class2 = np.random.randn(5, 20) + np.array([-2, 0, 0, 0, 0]).reshape(-1, 1)
-
-# Perform FDA
-W, X_projected = DataPreprocessing.FDA([class1, class2], num_components=2, graph=True)
-
-print(f"Projection matrix shape: {W.shape}")
-print(f"Projected data shape: {X_projected.shape}")
-```
 
 ## Regression Module
 
