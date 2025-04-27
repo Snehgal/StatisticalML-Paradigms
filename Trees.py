@@ -3,10 +3,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.pyplot as plt
-from tensorflow.keras.datasets import mnist
 from scipy.linalg import eigh
 from sklearn.metrics import accuracy_score,mean_squared_error,mean_absolute_error
-from DataProcessing import pca,numpy_split
+from .DataProcessing import pca,numpy_split
 
 class BinaryDecisionTree:
     """

@@ -1,7 +1,6 @@
-from DataProcessing import pca,numpy_split,FDA
+from .DataProcessing import pca,numpy_split,FDA
 import numpy as np
 import matplotlib.pyplot as plt
-from tensorflow.keras.datasets import mnist
 from scipy.linalg import eigh
 from sklearn.metrics import accuracy_score,mean_squared_error,mean_absolute_error
 
@@ -422,7 +421,7 @@ def gaussian(x, u, cov):
     mahalanobis = np.dot(np.dot(a.T, np.linalg.inv(cov)), a)
     return -0.5 * (mahalanobis + log_det)
 
-def predictMLE(x, u0=u0, cov0=cov0, u1=u1, cov1=cov1, u2=u2, cov2=cov2):
+def predictMLE(x, u0, cov0, u1, cov1, u2, cov2):
     """
     Predict class label for a sample using Maximum Likelihood Estimation (MLE).
 
@@ -478,7 +477,7 @@ def predictLDA(X, us, cov):
     discriminants = discriminantLDA(X, us, cov)
     return np.argmax(discriminants, axis=0)
 
-def discriminantQDA(X, us, covs, priors=[1/3]):
+def discriminantQDA(X, us, covs,priors=None):
     """
     Compute QDA discriminant scores for each class.
 
@@ -492,6 +491,8 @@ def discriminantQDA(X, us, covs, priors=[1/3]):
     - scores: Discriminant scores for each class (numpy array)
     """
     num_classes = len(us)
+    if priors is None:
+        priors = [1/num_classes]*num_classes
     num_samples = X.shape[1]
     scores = np.zeros((num_classes, num_samples))
     
@@ -511,7 +512,7 @@ def discriminantQDA(X, us, covs, priors=[1/3]):
     
     return scores
 
-def predictQDA(X, us, covs, priors=[1/3,1/3,1/3]):
+def predictQDA(X, us, covs,priors=None):
     """
     Predict class labels using Quadratic Discriminant Analysis (QDA).
 
@@ -524,6 +525,9 @@ def predictQDA(X, us, covs, priors=[1/3,1/3,1/3]):
     Returns:
     - predicted_labels: Predicted class labels (numpy array)
     """
+    num_classes = len(us)
+    if priors is None:
+        priors = [1/num_classes]*num_classes
     discriminants = discriminantQDA(X, us, covs, priors)
     return np.argmax(discriminants, axis=0)
 

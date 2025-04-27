@@ -9,15 +9,15 @@ A lightweight Python library for machine learning algorithms and utilities.
 - [Trees Module](#trees-module)
   <details>
     <summary>Classes and Functions</summary>
-    
+
+    - [BinaryDecisionTree](#treesbinarydecisiontree)
+    - [BaggedTrees](#treesbagged-trees)
     - [gini](#treesgini)
     - [findBestSplit](#treesfindbestsplit)
     - [findBestSplitRF](#treesfindbestsplitrf)
     - [foldSplit](#treesfoldsplit)
     - [polyFeatures](#treespolyfeatures)
     - [crossValError](#treescrossvalerror)
-    - [BinaryDecisionTree](#treesbinarydecisiontree)
-    - [BaggedTrees](#treesbagged-trees)
   </details>
 - [DataPreprocessing Module](#datapreprocessing-module)
   <details>
@@ -58,7 +58,10 @@ A lightweight Python library for machine learning algorithms and utilities.
 ## Installation
 
 ```bash
-pip install sml
+1. Download and extract file or clone repo
+2. Rename the fodler to SML
+3. Place it in working directory 
+4. Follow documentation
 ```
 
 ## Modules
@@ -794,16 +797,30 @@ plt.grid(True)
 plt.show()
 ```
 
-### Neural Network for XOR Classification
+### Neural Network for AND/OR/NOR/NAND/XOR/XNOR Classification
 
 ```python
 from SML import Regression
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Create XOR dataset
+func = "NOR"
+# Create AND dataset
 X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
-y = np.array([[0], [1], [1], [0]])
+
+if func == "AND":
+    y = np.array([[0], [0], [0], [1]])
+if func == "OR":
+    y = np.array([[0], [1], [1], [1]])
+if func == "NAND":
+    y = np.array([[1], [1], [1], [0]])
+if func == "NOR":
+    y = np.array([[1], [0], [0], [0]])
+if func == "XNOR":
+    y = np.array([[1], [0], [0], [1]])
+if func == "XOR":
+    y = np.array([[0], [1], [1], [0]])
+
 
 # Train neural network
 nn = Regression.SimpleNeuralNetwork()
@@ -823,18 +840,37 @@ for i, point in enumerate(grid_points):
     Z[i] = nn.forward(point.reshape(1, -1))[0, 0]
 Z = Z.reshape(xx.shape)
 
-# Plot decision boundary
 plt.figure(figsize=(10, 8))
-plt.contourf(xx, yy, Z, alpha=0.8, cmap=plt.cm.RdBu)
-plt.scatter(X[:, 0], X[:, 1], c=y.flatten(), cmap=plt.cm.RdBu, edgecolors='k')
-plt.title('Neural Network Decision Boundary for XOR')
-plt.xlabel('Feature 1')
-plt.ylabel('Feature 2')
+
+# Use a simpler colormap
+# plt.contourf(xx, yy, Z, alpha=0.6, cmap='coolwarm')
+plt.contour(xx, yy, Z, levels=[0.5], colors='black', linestyles='--', linewidths=2)
+
+# Plot the points clearly
+colors = ['blue' if label == 0 else 'orange' for label in y.flatten()]
+plt.scatter(X[:, 0], X[:, 1], c=colors, edgecolors='k', s=100, label='Data Points')
+
+# Manually add markers for class labels
+for i, txt in enumerate(y.flatten()):
+    plt.annotate(f'Class {txt}', (X[i, 0] + 0.02, X[i, 1] + 0.02), fontsize=12)
+
+# Add titles and labels
+plt.title(f'Simple Neural Network Learning {func}', fontsize=16)
+plt.xlabel('Input Feature 1', fontsize=14)
+plt.ylabel('Input Feature 2', fontsize=14)
+
+# Create custom legend
+from matplotlib.patches import Patch
+legend_elements = [Patch(facecolor='blue', edgecolor='k', label='Class 0'),
+                   Patch(facecolor='orange', edgecolor='k', label='Class 1')]
+plt.legend(handles=legend_elements, fontsize=12)
+
 plt.xlim(x_min, x_max)
 plt.ylim(y_min, y_max)
+plt.grid(True, linestyle='--', alpha=0.7)
 plt.show()
 ```
 
 ## License
 
-This project is licensed under the IIITD License - see the LICENSE file for details.
+This project is not under licensing yet.
