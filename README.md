@@ -30,7 +30,7 @@ A lightweight Python library for machine learning algorithms and utilities.
   </details>
 - [Regression Module](#regression-module)
   <details>
-    <summary>Classes and Functions</summary>
+    <summary>Functions and Classes</summary>
     
     - [DecisionStump](#regressiondecisionstump)
     - [GradientBoosting](#regressiongradientboosting)
