@@ -8,7 +8,7 @@ A lightweight Python library for machine learning algorithms and utilities.
 - [Modules Overview](#modules)
 - [Trees Module](#trees-module)
   <details>
-    <summary>Functions and Classes</summary>
+    <summary>Classes and Functions</summary>
     
     - [gini](#treesgini)
     - [findBestSplit](#treesfindbestsplit)
@@ -30,7 +30,7 @@ A lightweight Python library for machine learning algorithms and utilities.
   </details>
 - [Regression Module](#regression-module)
   <details>
-    <summary>Functions and Classes</summary>
+    <summary>Classes and Functions</summary>
     
     - [DecisionStump](#regressiondecisionstump)
     - [GradientBoosting](#regressiongradientboosting)
@@ -88,111 +88,6 @@ tree.train(X_train, y_train)
 # Make predictions
 X_test = [[2.0, 1.5], [3.5, 2.8]]
 predictions = tree.predict(X_test)
-```
-
-### `Trees.gini`
-
-Calculates the Gini impurity for a set of labels.
-
-**Parameters:**
-- `y` (array-like): Array of class labels.
-
-**Returns:**
-- `float`: Gini impurity value. A perfect split will have a value of 0.
-
-**Example:**
-```python
-from SML import Trees
-import numpy as np
-
-labels = np.array(["Yes", "No", "Yes", "Yes"])
-impurity = Trees.gini(labels)
-print(f"Gini impurity: {impurity}")  # Should return 0.375
-```
-
-### `Trees.findBestSplit
-`
-Finds the best feature and threshold to split the data based on Gini impurity.
-
-**Parameters:**
-- `X` (numpy.ndarray): Feature matrix of shape (d, n) where d is samples and n is features.
-- `y` (array-like): Target labels array.
-
-**Returns:**
-- `tuple`: (bestFeature, bestThreshold) indices for the optimal split.
-
-**Example:**
-```python
-from SML import Trees
-import numpy as np
-
-X = np.array([[2.5, 1.0], [3.0, 2.1], [1.5, 3.4], [4.2, 2.5]])
-y = np.array(["Yes", "No", "Yes", "No"])
-feature, threshold = Trees.findBestSplit(X, y)
-print(f"Best split: Feature {feature} with threshold {threshold}")
-```
-
-### `Trees.findBestSplitRF`
-
-Finds the best split for Random Forest by considering only a random subset of features.
-
-**Parameters:**
-- `X` (numpy.ndarray): Feature matrix.
-- `y` (array-like): Target labels array.
-- `numFeatures` (int, optional): Number of features to consider for the split. Default is 2.
-
-**Returns:**
-- `tuple`: (bestFeature, bestThreshold) indices for the optimal split.
-
-### `Trees.foldSplit`
-
-Splits data into k folds for cross-validation.
-
-**Parameters:**
-- `data` (pandas.DataFrame or numpy.ndarray): The dataset to split.
-- `k` (int, optional): Number of folds. Default is 5.
-
-**Returns:**
-- `list`: A list of k arrays containing indices for each fold.
-
-### `Trees.polyFeatures`
-
-Creates polynomial features from a single feature vector.
-
-**Parameters:**
-- `x` (numpy.ndarray): Input feature vector.
-- `degree` (int): Maximum polynomial degree.
-
-**Returns:**
-- `numpy.ndarray`: Matrix with polynomial features [x^0, x^1, ..., x^degree].
-
-### `Trees.crossValError`
-
-Performs k-fold cross-validation for polynomial regression and returns average MSE.
-
-**Parameters:**
-- `data` (pandas.DataFrame): Dataset containing 'x' and 'y' columns.
-- `degree` (int): Polynomial degree to use in the regression.
-- `k` (int, optional): Number of folds for cross-validation. Default is 5.
-
-**Returns:**
-- `float`: Average Mean Squared Error across all folds.
-
-**Example:**
-```python
-from SML import Trees
-import pandas as pd
-import numpy as np
-
-# Generate synthetic data
-x = np.linspace(0, 10, 100)
-y = 2*x + 3*x**2 + np.random.normal(0, 5, 100)
-data = pd.DataFrame({'x': x, 'y': y})
-
-# Find optimal polynomial degree using cross-validation
-for degree in range(1, 5):
-    mse = Trees.crossValError(data, degree=degree, k=5)
-    print(f"Degree {degree} - Cross-validation MSE: {mse:.4f}")
 ```
 
 ### `Trees.BinaryDecisionTree`
@@ -286,6 +181,111 @@ predictions = forest.predict(X_test)
 print(f"Ensemble predictions: {predictions}")
 ```
 
+### `Trees.gini`
+
+Calculates the Gini impurity for a set of labels.
+
+**Parameters:**
+- `y` (array-like): Array of class labels.
+
+**Returns:**
+- `float`: Gini impurity value. A perfect split will have a value of 0.
+
+**Example:**
+```python
+from SML import Trees
+import numpy as np
+
+labels = np.array(["Yes", "No", "Yes", "Yes"])
+impurity = Trees.gini(labels)
+print(f"Gini impurity: {impurity}")  # Should return 0.375
+```
+
+### `Trees.findBestSplit`
+`
+Finds the best feature and threshold to split the data based on Gini impurity.
+
+**Parameters:**
+- `X` (numpy.ndarray): Feature matrix of shape (d, n) where d is samples and n is features.
+- `y` (array-like): Target labels array.
+
+**Returns:**
+- `tuple`: (bestFeature, bestThreshold) indices for the optimal split.
+
+**Example:**
+```python
+from SML import Trees
+import numpy as np
+
+X = np.array([[2.5, 1.0], [3.0, 2.1], [1.5, 3.4], [4.2, 2.5]])
+y = np.array(["Yes", "No", "Yes", "No"])
+feature, threshold = Trees.findBestSplit(X, y)
+print(f"Best split: Feature {feature} with threshold {threshold}")
+```
+
+### `Trees.findBestSplitRF`
+
+Finds the best split for Random Forest by considering only a random subset of features.
+
+**Parameters:**
+- `X` (numpy.ndarray): Feature matrix.
+- `y` (array-like): Target labels array.
+- `numFeatures` (int, optional): Number of features to consider for the split. Default is 2.
+
+**Returns:**
+- `tuple`: (bestFeature, bestThreshold) indices for the optimal split.
+
+### `Trees.foldSplit`
+
+Splits data into k folds for cross-validation.
+
+**Parameters:**
+- `data` (pandas.DataFrame or numpy.ndarray): The dataset to split.
+- `k` (int, optional): Number of folds. Default is 5.
+
+**Returns:**
+- `list`: A list of k arrays containing indices for each fold.
+
+### `Trees.polyFeatures`
+
+Creates polynomial features from a single feature vector.
+
+**Parameters:**
+- `x` (numpy.ndarray): Input feature vector.
+- `degree` (int): Maximum polynomial degree.
+
+**Returns:**
+- `numpy.ndarray`: Matrix with polynomial features [x^0, x^1, ..., x^degree].
+
+### `Trees.crossValError`
+
+Performs k-fold cross-validation for polynomial regression and returns average MSE.
+
+**Parameters:**
+- `data` (pandas.DataFrame): Dataset containing 'x' and 'y' columns.
+- `degree` (int): Polynomial degree to use in the regression.
+- `k` (int, optional): Number of folds for cross-validation. Default is 5.
+
+**Returns:**
+- `float`: Average Mean Squared Error across all folds.
+
+**Example:**
+```python
+from SML import Trees
+import pandas as pd
+import numpy as np
+
+# Generate synthetic data
+x = np.linspace(0, 10, 100)
+y = 2*x + 3*x**2 + np.random.normal(0, 5, 100)
+data = pd.DataFrame({'x': x, 'y': y})
+
+# Find optimal polynomial degree using cross-validation
+for degree in range(1, 5):
+    mse = Trees.crossValError(data, degree=degree, k=5)
+    print(f"Degree {degree} - Cross-validation MSE: {mse:.4f}")
+```
+
 ## DataPreprocessing Module
 
 The `DataPreprocessing` module provides utilities for data preprocessing, including data splitting, accuracy calculation, and dimensionality reduction techniques like PCA and FDA.
@@ -306,7 +306,7 @@ X = np.random.randn(10, 100)  # 10 features, 100 samples
 X_reduced, U_p, p = DataPreprocessing.pca(X, preservedVariance=0.95)
 ```
 
-### DataPreprocessing.numpy_split
+### `DataPreprocessing.numpy_split`
 
 Split dataset into train and test sets.
 
