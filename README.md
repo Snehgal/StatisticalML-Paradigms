@@ -2,6 +2,59 @@
 
 A lightweight Python library for machine learning algorithms and utilities.
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Modules Overview](#modules)
+- [Trees Module](#trees-module)
+  <details>
+    <summary>Functions and Classes</summary>
+    
+    - [gini](#treesgini)
+    - [findBestSplit](#treesfindbestsplit)
+    - [findBestSplitRF](#treesfindbestsplitrf)
+    - [foldSplit](#treesfoldsplit)
+    - [polyFeatures](#treespolyfeatures)
+    - [crossValError](#treescrossvalerror)
+    - [BinaryDecisionTree](#treesbinarydecisiontree)
+    - [BaggedTrees](#treesbagged-trees)
+  </details>
+- [DataPreprocessing Module](#datapreprocessing-module)
+  <details>
+    <summary>Functions</summary>
+    
+    - [numpy_split](#datapreprocessingnumpy_split)
+    - [accuracy](#datapreprocessingaccuracy)
+    - [pca](#datapreprocessingpca)
+    - [FDA](#datapreprocessingfda)
+  </details>
+- [Regression Module](#regression-module)
+  <details>
+    <summary>Classes and Functions</summary>
+    
+    - [DecisionStump](#regressiondecisionstump)
+    - [GradientBoosting](#regressiongradientboosting)
+    - [SimpleNeuralNetwork](#regressionsimpleneuralnetwork)
+    - [gaussian](#regressiongaussian)
+    - [predictMLE](#regressionpredictmle)
+    - [discriminantLDA](#regressiondiscriminantlda)
+    - [predictLDA](#regressionpredictlda)
+    - [discriminantQDA](#regressiondiscriminantqda)
+    - [predictQDA](#regressionpredictqda)
+    - [PCAthenLDA](#regressionpcathenlda)
+  </details>
+- [Example Applications](#example-applications)
+  <details>
+    <summary>Examples</summary>
+    
+    - [Classification with Decision Trees](#classification-with-decision-trees)
+    - [Random Forest Ensemble](#random-forest-ensemble)
+    - [Dimensionality Reduction with PCA](#dimensionality-reduction-with-pca)
+    - [Regression with Gradient Boosting](#regression-with-gradient-boosting)
+    - [Neural Network for XOR Classification](#neural-network-for-xor-classification)
+  </details>
+- [License](#license)
+
 ## Installation
 
 ```bash
@@ -37,61 +90,7 @@ X_test = [[2.0, 1.5], [3.5, 2.8]]
 predictions = tree.predict(X_test)
 ```
 
-## DataPreprocessing Module
-
-The `DataPreprocessing` module provides utilities for data preprocessing, including data splitting, accuracy calculation, and dimensionality reduction techniques like PCA and FDA.
-
-### Usage
-
-```python
-from SML import DataPreprocessing
-import numpy as np
-
-# Example: Split data into training and test sets
-X = np.array([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]])
-y = np.array([0, 1, 0, 1, 0])
-X_train, X_test, y_train, y_test = DataPreprocessing.numpy_split(X, y, test_size=0.2, random_state=42)
-
-# Example: Perform PCA on a dataset
-X = np.random.randn(10, 100)  # 10 features, 100 samples
-X_reduced, U_p, p = DataPreprocessing.pca(X, preservedVariance=0.95)
-```
-
-## Regression Module
-
-The `Regression` module provides implementations of regression algorithms including gradient boosting with decision stumps and a simple neural network.
-
-### Usage
-
-```python
-from SML import Regression
-import numpy as np
-
-# Example: Train a gradient boosting model for regression
-X_train = np.linspace(0, 1, 100).reshape(-1, 1)
-y_train = np.sin(2 * np.pi * X_train.flatten()) + 0.1 * np.random.randn(100)
-
-# Create and train a gradient boosting model
-gbm = Regression.GradientBoosting(n_estimators=100, learning_rate=0.1)
-gbm.fit(X_train, y_train)
-
-# Make predictions
-X_test = np.linspace(0, 1, 20).reshape(-1, 1)
-predictions = gbm.predict(X_test)
-
-# Example: Train a simple neural network
-X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
-y = np.array([[0], [1], [1], [0]])  # XOR function
-
-nn = Regression.SimpleNeuralNetwork()
-nn.train(X, y, learning_rate=0.1, epochs=1000, method="gradientDescent")
-```
-
-## API Reference
-
-### Trees Module API
-
-### `Trees.gini(y)`
+### Trees.gini
 
 Calculates the Gini impurity for a set of labels.
 
@@ -111,7 +110,7 @@ impurity = Trees.gini(labels)
 print(f"Gini impurity: {impurity}")  # Should return 0.375
 ```
 
-### `Trees.findBestSplit(X, y)`
+### Trees.findBestSplit
 
 Finds the best feature and threshold to split the data based on Gini impurity.
 
@@ -133,7 +132,7 @@ feature, threshold = Trees.findBestSplit(X, y)
 print(f"Best split: Feature {feature} with threshold {threshold}")
 ```
 
-### `Trees.findBestSplitRF(X, y, numFeatures=2)`
+### Trees.findBestSplitRF
 
 Finds the best split for Random Forest by considering only a random subset of features.
 
@@ -145,7 +144,7 @@ Finds the best split for Random Forest by considering only a random subset of fe
 **Returns:**
 - `tuple`: (bestFeature, bestThreshold) indices for the optimal split.
 
-### `Trees.foldSplit(data, k=5)`
+### Trees.foldSplit
 
 Splits data into k folds for cross-validation.
 
@@ -156,7 +155,7 @@ Splits data into k folds for cross-validation.
 **Returns:**
 - `list`: A list of k arrays containing indices for each fold.
 
-### `Trees.polyFeatures(x, degree)`
+### Trees.polyFeatures
 
 Creates polynomial features from a single feature vector.
 
@@ -167,7 +166,7 @@ Creates polynomial features from a single feature vector.
 **Returns:**
 - `numpy.ndarray`: Matrix with polynomial features [x^0, x^1, ..., x^degree].
 
-### `Trees.crossValError(data, degree, k=5)`
+### Trees.crossValError
 
 Performs k-fold cross-validation for polynomial regression and returns average MSE.
 
@@ -196,7 +195,7 @@ for degree in range(1, 5):
     print(f"Degree {degree} - Cross-validation MSE: {mse:.4f}")
 ```
 
-### `Trees.BinaryDecisionTree`
+### Trees.BinaryDecisionTree
 
 A binary decision tree classifier for binary classification problems.
 
@@ -240,7 +239,7 @@ predictions = tree.predict(X_test)
 print(f"Predictions: {predictions}")
 ```
 
-### `Trees.BaggedTrees`
+### Trees.Bagged Trees
 
 Implementation of Bootstrap Aggregating (Bagging) for decision trees. Can be configured as a Random Forest.
 
@@ -287,9 +286,27 @@ predictions = forest.predict(X_test)
 print(f"Ensemble predictions: {predictions}")
 ```
 
-### DataPreprocessing Module API
+## DataPreprocessing Module
 
-### `DataPreprocessing.numpy_split(x, y, test_size=0.2, random_state=None)`
+The `DataPreprocessing` module provides utilities for data preprocessing, including data splitting, accuracy calculation, and dimensionality reduction techniques like PCA and FDA.
+
+### Usage
+
+```python
+from SML import DataPreprocessing
+import numpy as np
+
+# Example: Split data into training and test sets
+X = np.array([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]])
+y = np.array([0, 1, 0, 1, 0])
+X_train, X_test, y_train, y_test = DataPreprocessing.numpy_split(X, y, test_size=0.2, random_state=42)
+
+# Example: Perform PCA on a dataset
+X = np.random.randn(10, 100)  # 10 features, 100 samples
+X_reduced, U_p, p = DataPreprocessing.pca(X, preservedVariance=0.95)
+```
+
+### DataPreprocessing.numpy_split
 
 Split dataset into train and test sets.
 
@@ -313,7 +330,7 @@ y = np.array([0, 1, 0, 1, 0])
 X_train, X_test, y_train, y_test = DataPreprocessing.numpy_split(X, y, test_size=0.2, random_state=42)
 ```
 
-### `DataPreprocessing.accuracy(xTest, labels, predict)`
+### DataPreprocessing.accuracy
 
 Compute classification accuracy.
 
@@ -343,7 +360,7 @@ acc = DataPreprocessing.accuracy(X, y, tree.predictSingle)
 print(f"Accuracy: {acc:.4f}")
 ```
 
-### `DataPreprocessing.pca(X, preservedVariance=None, pcaComponents=None)`
+### DataPreprocessing.pca
 
 Perform Principal Component Analysis (PCA) on the data.
 
@@ -375,7 +392,7 @@ X_reduced_2, U_p_2, _ = DataPreprocessing.pca(X, pcaComponents=3)
 print(f"Reduced to exactly 3 components: {X_reduced_2.shape}")
 ```
 
-### `DataPreprocessing.FDA(train_sets, delta=1e-3, num_components=2, graph=False)`
+### DataPreprocessing.FDA
 
 Perform Fisher Discriminant Analysis (FDA) on training sets.
 
@@ -406,9 +423,37 @@ print(f"Projection matrix shape: {W.shape}")
 print(f"Projected data shape: {X_projected.shape}")
 ```
 
-### Regression Module API
+## Regression Module
 
-### `Regression.DecisionStump`
+The `Regression` module provides implementations of regression algorithms including gradient boosting with decision stumps and a simple neural network.
+
+### Usage
+
+```python
+from SML import Regression
+import numpy as np
+
+# Example: Train a gradient boosting model for regression
+X_train = np.linspace(0, 1, 100).reshape(-1, 1)
+y_train = np.sin(2 * np.pi * X_train.flatten()) + 0.1 * np.random.randn(100)
+
+# Create and train a gradient boosting model
+gbm = Regression.GradientBoosting(n_estimators=100, learning_rate=0.1)
+gbm.fit(X_train, y_train)
+
+# Make predictions
+X_test = np.linspace(0, 1, 20).reshape(-1, 1)
+predictions = gbm.predict(X_test)
+
+# Example: Train a simple neural network
+X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+y = np.array([[0], [1], [1], [0]])  # XOR function
+
+nn = Regression.SimpleNeuralNetwork()
+nn.train(X, y, learning_rate=0.1, epochs=1000, method="gradientDescent")
+```
+
+### Regression.DecisionStump
 
 A one-level decision tree (decision stump) for regression tasks.
 
@@ -441,7 +486,7 @@ predictions = stump.predict(X)
 print(f"Decision Stump: {stump}")
 ```
 
-### `Regression.GradientBoosting`
+### Regression.GradientBoosting
 
 Implements a Gradient Boosting Machine (GBM) using Decision Stumps as weak learners.
 
@@ -491,7 +536,7 @@ plt.legend()
 plt.show()
 ```
 
-### `Regression.SimpleNeuralNetwork`
+### Regression.SimpleNeuralNetwork
 
 Implements a simple fully connected neural network with one hidden layer for regression or classification tasks.
 
@@ -528,9 +573,7 @@ for i in range(len(X)):
     print(f"Input: {X[i]}, True: {y[i][0]}, Predicted: {predictions[i][0]:.3f}")
 ```
 
-### Discriminant Analysis Functions
-
-### `Regression.gaussian(x, u, cov)`
+### Regression.gaussian
 
 Computes log probability density of multivariate Gaussian distribution.
 
@@ -542,7 +585,7 @@ Computes log probability density of multivariate Gaussian distribution.
 **Returns:**
 - `float`: Log probability of sample under Gaussian.
 
-### `Regression.predictMLE(x, u0, cov0, u1, cov1, u2, cov2)`
+### Regression.predictMLE
 
 Predict class label for a sample using Maximum Likelihood Estimation (MLE).
 
@@ -554,7 +597,7 @@ Predict class label for a sample using Maximum Likelihood Estimation (MLE).
 **Returns:**
 - `int`: Predicted class label (0, 1, or 2).
 
-### `Regression.discriminantLDA(X, us, cov)`
+### Regression.discriminantLDA
 
 Compute LDA discriminant scores for each class.
 
@@ -566,7 +609,7 @@ Compute LDA discriminant scores for each class.
 **Returns:**
 - `np.ndarray`: Discriminant scores for each class.
 
-### `Regression.predictLDA(X, us, cov)`
+### Regression.predictLDA
 
 Predict class labels using Linear Discriminant Analysis (LDA).
 
@@ -578,7 +621,7 @@ Predict class labels using Linear Discriminant Analysis (LDA).
 **Returns:**
 - `np.ndarray`: Predicted class labels.
 
-### `Regression.discriminantQDA(X, us, covs, priors=[1/3])`
+### Regression.discriminantQDA
 
 Compute QDA discriminant scores for each class.
 
@@ -591,7 +634,7 @@ Compute QDA discriminant scores for each class.
 **Returns:**
 - `np.ndarray`: Discriminant scores for each class.
 
-### `Regression.predictQDA(X, us, covs, priors=[1/3,1/3,1/3])`
+### Regression.predictQDA
 
 Predict class labels using Quadratic Discriminant Analysis (QDA).
 
@@ -604,7 +647,7 @@ Predict class labels using Quadratic Discriminant Analysis (QDA).
 **Returns:**
 - `np.ndarray`: Predicted class labels.
 
-### `Regression.PCAthenLDA(presVar, numPCA=0)`
+### Regression.PCAthenLDA
 
 Perform Principal Component Analysis (PCA) followed by Linear Discriminant Analysis (LDA) on the dataset.
 
