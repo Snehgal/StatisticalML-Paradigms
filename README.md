@@ -692,7 +692,7 @@ predictions = tree.predict(X_test)
 
 # Calculate accuracy
 accuracy = np.mean(predictions == y_test)
-print(f"Decision Tree Accuracy: {accuracy:.4f}")
+print(f"Decision Tree Accuracy: {accuracy*100:.4f}%")
 ```
 
 ### Random Forest Ensemble
@@ -719,59 +719,70 @@ predictions = forest.predict(X_test)
 
 # Calculate accuracy
 accuracy = np.mean(predictions == y_test)
-print(f"Random Forest Accuracy: {accuracy:.4f}")
+print(f"Random Forest Accuracy: {accuracy*100:.4f}%")
 ```
 
 ### Dimensionality Reduction with PCA
 
 ```python
-from SML import DataPreprocessing
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.datasets import load_digits
+from SML import DataProcessing as DP
+from sklearn.datasets import fetch_openml
 
-# Load digits dataset
-digits = load_digits()
-X = digits.data.T  # Transpose to match expected format (features, samples)
-y = digits.target
-
-# Apply PCA to reduce to 2 dimensions for visualization
-X_reduced, _, _ = DataPreprocessing.pca(X, pcaComponents=2)
-
-# Plot the results
-plt.figure(figsize=(10, 8))
-scatter = plt.scatter(X_reduced[0], X_reduced[1], c=y, cmap='tab10')
-plt.colorbar(scatter, label='Digit')
-plt.title('PCA projection of digits dataset')
-plt.xlabel('First Principal Component')
-plt.ylabel('Second Principal Component')
+# Load MNIST (grayscale images)
+mnist = fetch_openml("mnist_784", version=1)
+X = mnist.data.to_numpy()  # (70000, 784)
+y = mnist.target.astype(int)
+X_subset = X[:100]  # (100, 784)
+y_subset = y[:100]
+X_mean = np.mean(X_subset, axis=0, keepdims=True) 
+X_centered = (X_subset - X_mean).T 
+X_reduced, U_p, p = DP.pca(X_centered,preservedVariance=0.95)
+random_idx = np.random.choice(X_subset.shape[0], 1)[0]
+img_original = X_subset[random_idx].reshape(1, -1)  # shape (1, 784)
+img_centered = (img_original - X_mean)  # shape (1, 784)
+img_projected = np.dot(U_p.T, img_centered.T)  # (2, 1)
+# Reconstruct
+img_reconstructed_centered = np.dot(U_p, img_projected).T  # (1, 784)
+img_reconstructed_flat = img_reconstructed_centered + X_mean
+img_reconstructed = img_reconstructed_flat.reshape(28, 28)
+img_original_reshaped = img_original.reshape(28, 28)
+fig, axes = plt.subplots(1, 2, figsize=(8, 4))
+axes[0].imshow(img_original_reshaped, cmap='gray')  # Grayscale
+axes[0].set_title('Original Image')
+axes[0].axis('off')
+axes[1].imshow(img_reconstructed, cmap='gray')
+axes[1].set_title(f'PCA Reconstruction\n({p} Components)')
+axes[1].axis('off')
+plt.tight_layout()
 plt.show()
+
 ```
 
 ### Regression with Gradient Boosting
 
 ```python
-from SML import Regression
+from SML import Regression,DataProcessing
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Create a synthetic dataset
-np.random.seed(42)
-X = np.linspace(0, 10, 100).reshape(-1, 1)
-y = 2 * np.sin(X.flatten()) + 0.1 * X.flatten()**2 + np.random.normal(0, 0.5, 100)
+n_samples = 100
+x = np.random.uniform(0, 1, n_samples)
+noise = np.random.normal(0, np.sqrt(0.01), n_samples)
+y = np.sin(2 * np.pi * x) + np.cos(2 * np.pi * x) + noise
 
-# Split data into train and test sets
-indices = np.random.permutation(len(X))
-train_size = 70
-X_train, X_test = X[indices[:train_size]], X[indices[train_size:]]
-y_train, y_test = y[indices[:train_size]], y[indices[train_size:]]
+x = x.reshape(-1, 1)
+X_train, X_test, y_train, y_test = DataProcessing.numpy_split(x, y, test_size=0.2)
 
-# Train a gradient boosting model
-gbm = Regression.GradientBoosting(n_estimators=200, learning_rate=0.05, loss='squared')
-gbm.fit(X_train, y_train)
-
+n_estimators = 1000
+learning_rate = 0.01
+cuts = 20
+# Squared loss
+gb_l2 = Regression.GradientBoosting(n_estimators=n_estimators,learning_rate=learning_rate,loss='squared',uniform_cuts= cuts)
+gb_l2.fit(X_train, y_train)
 # Make predictions
-predictions = gbm.predict(X_test)
+predictions = gb_l2.predict(X_test)
 
 # Calculate R-squared
 ss_res = np.sum((y_test - predictions) ** 2)
@@ -791,7 +802,7 @@ plt.show()
 
 # Plot training loss history
 plt.figure(figsize=(10, 6))
-plt.plot(gbm.train_loss_history)
+plt.plot(gb_l2.train_loss_history)
 plt.xlabel('Iterations')
 plt.ylabel('Training Loss')
 plt.title('GBM Training Loss over Iterations')

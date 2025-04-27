@@ -75,6 +75,9 @@ def pca(X, preservedVariance=None, pcaComponents=None):
     cov = np.dot(X_centered, X_centered.T) / (X.shape[1] - 1)
 
     eigenVals, eigenVecs = np.linalg.eig(cov)
+    eigenVals = np.real(eigenVals)
+    eigenVecs = np.real(eigenVecs)
+
     sortIndices = np.argsort(eigenVals)[::-1]
     eigenVals = eigenVals[sortIndices]
     eigenVecs = eigenVecs[:, sortIndices]

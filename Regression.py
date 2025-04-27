@@ -108,7 +108,7 @@ class GradientBoosting:
         self.stumps = []
         self.train_loss_history = []
         self.uniform_cuts = uniform_cuts
-
+        self.y_train = None
     def _negative_gradient(self, y, y_pred):
         """
         Computes the negative gradient (residuals) based on the loss function.
@@ -138,6 +138,7 @@ class GradientBoosting:
         Returns:
             GradientBoosting: The fitted model instance.
         """
+        self.y_train = y
         initial_pred = np.mean(y)
         y_pred = np.full_like(y, initial_pred)
 
@@ -164,9 +165,9 @@ class GradientBoosting:
             np.ndarray: Predicted output array.
         """
         if self.loss == 'squared':
-            y_pred = np.full(X.shape[0], np.mean(y_train))
+            y_pred = np.full(X.shape[0], np.mean(self.y_train))
         else:
-            y_pred = np.full(X.shape[0], np.median(y_train))
+            y_pred = np.full(X.shape[0], np.median(self.y_train))
 
         for stump in self.stumps:
             y_pred += self.learning_rate * stump.predict(X)
