@@ -90,7 +90,7 @@ X_test = [[2.0, 1.5], [3.5, 2.8]]
 predictions = tree.predict(X_test)
 ```
 
-### Trees.gini
+### `Trees.gini`
 
 Calculates the Gini impurity for a set of labels.
 
@@ -110,8 +110,8 @@ impurity = Trees.gini(labels)
 print(f"Gini impurity: {impurity}")  # Should return 0.375
 ```
 
-### Trees.findBestSplit
-
+### `Trees.findBestSplit
+`
 Finds the best feature and threshold to split the data based on Gini impurity.
 
 **Parameters:**
@@ -132,7 +132,7 @@ feature, threshold = Trees.findBestSplit(X, y)
 print(f"Best split: Feature {feature} with threshold {threshold}")
 ```
 
-### Trees.findBestSplitRF
+### `Trees.findBestSplitRF`
 
 Finds the best split for Random Forest by considering only a random subset of features.
 
@@ -144,7 +144,7 @@ Finds the best split for Random Forest by considering only a random subset of fe
 **Returns:**
 - `tuple`: (bestFeature, bestThreshold) indices for the optimal split.
 
-### Trees.foldSplit
+### `Trees.foldSplit`
 
 Splits data into k folds for cross-validation.
 
@@ -155,7 +155,7 @@ Splits data into k folds for cross-validation.
 **Returns:**
 - `list`: A list of k arrays containing indices for each fold.
 
-### Trees.polyFeatures
+### `Trees.polyFeatures`
 
 Creates polynomial features from a single feature vector.
 
@@ -166,7 +166,7 @@ Creates polynomial features from a single feature vector.
 **Returns:**
 - `numpy.ndarray`: Matrix with polynomial features [x^0, x^1, ..., x^degree].
 
-### Trees.crossValError
+### `Trees.crossValError`
 
 Performs k-fold cross-validation for polynomial regression and returns average MSE.
 
@@ -195,7 +195,7 @@ for degree in range(1, 5):
     print(f"Degree {degree} - Cross-validation MSE: {mse:.4f}")
 ```
 
-### Trees.BinaryDecisionTree
+### `Trees.BinaryDecisionTree`
 
 A binary decision tree classifier for binary classification problems.
 
@@ -239,7 +239,7 @@ predictions = tree.predict(X_test)
 print(f"Predictions: {predictions}")
 ```
 
-### Trees.Bagged Trees
+### `Trees.Bagged Trees`
 
 Implementation of Bootstrap Aggregating (Bagging) for decision trees. Can be configured as a Random Forest.
 
@@ -330,7 +330,7 @@ y = np.array([0, 1, 0, 1, 0])
 X_train, X_test, y_train, y_test = DataPreprocessing.numpy_split(X, y, test_size=0.2, random_state=42)
 ```
 
-### DataPreprocessing.accuracy
+### `DataPreprocessing.accuracy`
 
 Compute classification accuracy.
 
@@ -360,7 +360,7 @@ acc = DataPreprocessing.accuracy(X, y, tree.predictSingle)
 print(f"Accuracy: {acc:.4f}")
 ```
 
-### DataPreprocessing.pca
+### `DataPreprocessing.pca`
 
 Perform Principal Component Analysis (PCA) on the data.
 
@@ -392,7 +392,7 @@ X_reduced_2, U_p_2, _ = DataPreprocessing.pca(X, pcaComponents=3)
 print(f"Reduced to exactly 3 components: {X_reduced_2.shape}")
 ```
 
-### DataPreprocessing.FDA
+### `DataPreprocessing.FDA`
 
 Perform Fisher Discriminant Analysis (FDA) on training sets.
 
@@ -453,7 +453,7 @@ nn = Regression.SimpleNeuralNetwork()
 nn.train(X, y, learning_rate=0.1, epochs=1000, method="gradientDescent")
 ```
 
-### Regression.DecisionStump
+### `Regression.DecisionStump`
 
 A one-level decision tree (decision stump) for regression tasks.
 
@@ -486,7 +486,7 @@ predictions = stump.predict(X)
 print(f"Decision Stump: {stump}")
 ```
 
-### Regression.GradientBoosting
+### `Regression.GradientBoosting`
 
 Implements a Gradient Boosting Machine (GBM) using Decision Stumps as weak learners.
 
@@ -536,7 +536,7 @@ plt.legend()
 plt.show()
 ```
 
-### Regression.SimpleNeuralNetwork
+### `Regression.SimpleNeuralNetwork`
 
 Implements a simple fully connected neural network with one hidden layer for regression or classification tasks.
 
@@ -573,7 +573,7 @@ for i in range(len(X)):
     print(f"Input: {X[i]}, True: {y[i][0]}, Predicted: {predictions[i][0]:.3f}")
 ```
 
-### Regression.gaussian
+### `Regression.gaussian`
 
 Computes log probability density of multivariate Gaussian distribution.
 
@@ -585,7 +585,7 @@ Computes log probability density of multivariate Gaussian distribution.
 **Returns:**
 - `float`: Log probability of sample under Gaussian.
 
-### Regression.predictMLE
+### `Regression.predictMLE`
 
 Predict class label for a sample using Maximum Likelihood Estimation (MLE).
 
@@ -597,7 +597,7 @@ Predict class label for a sample using Maximum Likelihood Estimation (MLE).
 **Returns:**
 - `int`: Predicted class label (0, 1, or 2).
 
-### Regression.discriminantLDA
+### `Regression.discriminantLDA`
 
 Compute LDA discriminant scores for each class.
 
@@ -609,7 +609,7 @@ Compute LDA discriminant scores for each class.
 **Returns:**
 - `np.ndarray`: Discriminant scores for each class.
 
-### Regression.predictLDA
+### `Regression.predictLDA`
 
 Predict class labels using Linear Discriminant Analysis (LDA).
 
@@ -621,7 +621,7 @@ Predict class labels using Linear Discriminant Analysis (LDA).
 **Returns:**
 - `np.ndarray`: Predicted class labels.
 
-### Regression.discriminantQDA
+### `Regression.discriminantQDA`
 
 Compute QDA discriminant scores for each class.
 
@@ -634,7 +634,7 @@ Compute QDA discriminant scores for each class.
 **Returns:**
 - `np.ndarray`: Discriminant scores for each class.
 
-### Regression.predictQDA
+### `Regression.predictQDA`
 
 Predict class labels using Quadratic Discriminant Analysis (QDA).
 
@@ -647,7 +647,7 @@ Predict class labels using Quadratic Discriminant Analysis (QDA).
 **Returns:**
 - `np.ndarray`: Predicted class labels.
 
-### Regression.PCAthenLDA
+### `Regression.PCAthenLDA`
 
 Perform Principal Component Analysis (PCA) followed by Linear Discriminant Analysis (LDA) on the dataset.
 
