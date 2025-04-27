@@ -60,7 +60,7 @@ A lightweight Python library for machine learning algorithms and utilities.
 ```bash
 1. Download and extract file or clone repo
 2. Rename the fodler to SML
-3. Place it in working directory 
+3. Place it inside your working directory 
 4. Follow documentation
 ```
 
